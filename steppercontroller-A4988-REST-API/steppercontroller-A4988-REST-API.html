@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Yun - A4988 Stepper Motor Controller with REST-API</title>
+	
+	<script>
+	function request(operation) {
+	  
+	  var ip = $( "#text-ip" ).val();
+	  var strUrl = "http://" + ip + "/arduino/" + operation;	  
+	  
+	  console.log(strUrl);
+	  $( "#textarea-data" ).val(  $( "#textarea-data" ).val() + strUrl + "\n");
+	  
+	  jQuery.ajax({
+		url: strUrl,	
+		async:true,		
+	  });	  
+	}
+	</script>
+	
+  </head>
+  <body>
+	<div>
+		<input type="text" id="text-ip" value="192.168.0.101"></input>
+	</div>
+	<div>
+		<button onClick="request('stepper/up');">Up</button> <br/>
+		<button onClick="request('stepper/stop');">Stop</button> <br/>
+		<button onClick="request('stepper/down');">Down</button>	
+	</div>
+	<hr/>
+	<div>
+		<input type="text" id="text-steps" value="5000"></input> <br/>
+		
+		<button onClick="request('stepper/up/' + $( '#text-steps' ).val());">Up</button> <br/>
+		<button onClick="request('stepper/down/' + $( '#text-steps' ).val());">Down</button>
+	</div>
+	<hr/>
+	<div>
+		<button onClick="request('stepper/sleep');">Sleep</button> <br/>
+		<button onClick="request('stepper/awake');">Awake</button> <br/>
+		<button onClick="request('stepper/enable');">Enable</button> <br/>
+		<button onClick="request('stepper/disable');">Disable</button> <br/>
+		<button onClick="request('stepper/reset');">Reset</button>
+	</div>
+	<hr/>
+	<div>
+		<button onClick="request('stepper/fullstep');">Full Step</button> <br/>
+		<button onClick="request('stepper/halfstep');">1/2 Step</button> <br/>
+		<button onClick="request('stepper/quarterstep');">1/4 Step</button> <br/>
+		<button onClick="request('stepper/eigththstep');">1/8 Step</button> <br/>
+		<button onClick="request('stepper/sixteenthstep');">1/16 Step</button>
+	</div>
+	<hr/>
+	<div>
+		<input type="text" id="text-rpm" value="100"></input> <br/>	
+	
+		<button onClick="request('stepper/rpm/' + $( '#text-rpm' ).val());">RPM</button>
+		<button onClick="request('stepper/stepdelay/' + $( '#text-rpm' ).val());">StepDelay</button>			
+	</div>
+	<hr/>
+	<div>		
+		<textarea id="textarea-data" value="" style="height: 200px; width: 100%;"></textarea>
+	</div>
+  </body>
+</html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
