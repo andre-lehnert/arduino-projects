@@ -32,11 +32,6 @@ class A4988
 		void setStepsPerRound(double stepAngle);
 		void setStepDelay(unsigned int delayMicroSeconds);
 		void setRPM(unsigned int rpm);	
-		void setFullStepMode();
-		void setHalfStepMode();
-		void setQuarterStepMode();
-		void setEigThthStepMode();
-		void setSixteenthStepMode();
 	private:
 		unsigned int _stepsPerRound;
 		uint8_t _stepPin;
@@ -53,7 +48,11 @@ class A4988
 		boolean _isEnabled;
 		boolean _isNewRequest;	
 		void initPinModes();
-		
+		void setFullStepMode();
+		void setHalfStepMode();
+		void setQuarterStepMode();
+		void setEigThthStepMode();
+		void setSixteenthStepMode();
 };
 
 #endif

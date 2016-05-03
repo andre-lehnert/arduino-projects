@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Yun - A4988 Stepper Motor Controller with REST-API</title>
+
+	<script>
+	function request(operation) {
+
+	  var ip = $( "#text-ip" ).val();
+	  var strUrl = "http://" + ip + "/arduino/" + operation;
+
+	  console.log(strUrl);
+	  $( "#textarea-data" ).val(  $( "#textarea-data" ).val() + strUrl + "\n");
+
+	  jQuery.ajax({
+		url: strUrl,
+		async:true,
+	  });
+	}
+	</script>
+
+  </head>
+  <body>
+	<div>
+		IP <input type="text" id="text-ip" value="192.168.0.101"></input>
+	</div>
+	<hr/>
+	<div>
+    <h2>Stepper</h2>
+		Position <input type="text" id="text-steps" value="50"></input> % <br/>
+
+		<button onClick="request('stepper/moveto/0');">MoveTo 0%</button> <button onClick="request('stepper/moveto/' + $( '#text-steps' ).val());">MoveTo X%</button> <button onClick="request('stepper/moveto/100');">MoveTo 100%</button><br/>
+		<button onClick="request('stepper/stop');">Stop</button> <br/>
+		<button onClick="request('stepper/init');">Init</button>
+
+	</div>
+	<hr/>
+	<div>
+    <h2>LED</h2>
+		R <input type="text" id="text-red" value="150"></input> <br/>
+    G <input type="text" id="text-green" value="150"></input> <br/>
+    B <input type="text" id="text-blue" value="150"></input> <br/>
+
+		Animation <button onClick="request('led/load/' + $( '#text-red' ).val() + '-' + $( '#text-green' ).val() + '-' + $( '#text-blue' ).val() + '/');">Loading</button>
+    <button onClick="request('led/dimm/' + $( '#text-red' ).val() + '-' + $( '#text-green' ).val() + '-' + $( '#text-blue' ).val() + '/');">Dimming</button>
+
+	</div>
+	<hr/>
+
+  </body>
+</html>
+
+<script src="jquery.js"></script>
