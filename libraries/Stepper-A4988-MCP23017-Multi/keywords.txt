@@ -9,7 +9,7 @@
 A4988				      KEYWORD1	A4988
 MCP23017 		      KEYWORD1	MCP23017
 A4988_MCP23017_Multi 		KEYWORD1	A4988_MCP23017_Multi
--A4988-		        KEYWORD1	-A4988-
+Multi				      KEYWORD1	Multi
 
 #######################################
 # Methods and Functions (KEYWORD2)

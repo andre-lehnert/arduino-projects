@@ -2,6 +2,8 @@
 This file is part of the master thesis "A Shape-Changing Display for 
 Ambient Notifications".
 
+see http://andre-lehnert.de/dokuwiki/doku.php?id=wiki:publikationen:masterarbeit:implementierung:i2c
+
 This Sketch is used to control a LED stripe with 44 WS2812B RGB LEDs.
 - An Arduino Nano is adressed by I2C https://www.arduino.cc/en/Reference/Wire
   see "I2C Adressing Schema"
@@ -67,7 +69,7 @@ Bar/ I2C Receiver
 ////////////////////////////////////////////////////////////////////////////////
 
 #define MASTER_ADDRESS  0x0f    // Raspberry Pi, Decimal: 15
-#define SLAVE_ADDRESS   0x11    // MotorController 0x10 + 1, Decimal: 17
+#define SLAVE_ADDRESS   0x13    // MotorController 0x10 + 1, Decimal: 17
 
 #define LED_PIN         8       // D8
 
@@ -172,11 +174,9 @@ void checkSerial() {
     digitalWrite(13, HIGH);
 
     // Get message
-    String msg = "";    
-    while(1 <= Serial.available()) {  
-      char c =  Serial.read(); 
-      msg += String( c );     
-    }
+    String msg = ""; 
+
+    msg += Serial.readString();  
   
     debug.print(msg);
   
@@ -215,12 +215,65 @@ void parseMessage(String msg) {
   // 2) Execute commands
   if (cmd.indexOf("LIGHT") > -1) {
     
-    debug.println("Lighting & Animations:");
+    debug.println("Lighting:");
 
     // Parse LIGHT parameter
-    int paramNum = 4;
-    String lighting[4];    
-    int rgba[4];
+    const int paramNum = 5;
+    String lighting[paramNum];    
+    int rgba[4] = { 0, 0, 0, -1};
+    int lastEntry = -2;
+    
+    String tempValue = value;
+        
+    // Parse Value
+    for (int param = 0; param < paramNum+1; param++) {
+
+        if (tempValue.indexOf("/") > -1 ) {          
+          
+          lighting[param] = tempValue.substring(0, tempValue.indexOf("/") );
+          debug.println(String( param + 1) + ": \t", lighting[param] );  
+                    
+          tempValue = tempValue.substring(tempValue.indexOf("/")+1, tempValue.length());
+          lastEntry = param; // LIGHT:A/+/ff1464/100 <- last
+          
+        } else if (param == lastEntry + 1) { 
+          lighting[param] = tempValue;   
+          debug.println(String( param + 1) + ": \t", lighting[param] );             
+        }  
+    }
+
+    String side = lighting[0];
+    debug.println("Side:", side);
+
+    String op = lighting[1];
+    debug.println("Operation:", op);
+
+    int led = lighting[2].toInt();
+    debug.println("LED Number:", led);
+
+    // Convert HEX to RGB
+    if ( op != "-" ) {
+      rgba[0] = hexToDec(lighting[3].substring(0,2));
+      rgba[1] = hexToDec(lighting[3].substring(2,4));
+      rgba[2] = hexToDec(lighting[3].substring(4,6));    
+      rgba[3] = lighting[4].toInt();      
+      debug.println("R:", rgba[0]);
+      debug.print("G:", rgba[1]);
+      debug.print("B:", rgba[2]);
+      debug.print("Brightness:", rgba[3]);
+    }
+
+    // Update Lighting Pattern
+    setLighting(side, op, led, rgba);
+    
+  } else if (cmd.indexOf("ANI") > -1) {
+    
+    debug.println("Animations:");
+
+    // Parse LIGHT parameter
+    const int paramNum = 4;
+    String lighting[paramNum];    
+    int rgba[4];    
     int lastEntry = -2;
     
     String tempValue = value;
@@ -251,6 +304,7 @@ void parseMessage(String msg) {
     debug.print("G:", rgba[1]);
     debug.print("B:", rgba[2]);
     debug.print("Brightness:", rgba[3]);    
+
     
     int spd = lighting[3].toInt();
     debug.println("Animation Speed:", lighting[3]);
@@ -263,6 +317,31 @@ void parseMessage(String msg) {
 /* -------------------------------------------------------------------------------------
  * Animations
  */
+
+void setLighting(String side, String operation, int num, int rgba[4]) {
+
+  // Scale and set brightness
+  if (rgba[3] >= 0) {
+    int brightness = getScaledBrightness(rgba[3]);
+    led.setBrightness(AlaColor(brightness, brightness, brightness)); // TODO
+  }
+  
+  if (operation == "+") {
+    
+    led.setLED(side, num, ALA_ON, AlaColor(rgba[0], rgba[1], rgba[2]));
+  
+  } else if (operation == "-") {
+    
+    led.setLED(side, num, ALA_OFF, AlaColor(0, 0, 0));
+  
+  } else if (operation == "*") {
+    
+    led.setSide(side, ALA_OFF, AlaColor(0, 0, 0));
+    //led.setLED(side, num, ALA_ON, AlaColor(rgba[0], rgba[1], rgba[2]));
+  }
+
+  led.setCustomLighting(true);
+}
 
 void setAnimation(String animation, int rgba[4], int spd) {
 
@@ -326,7 +405,8 @@ void setAnimation(String animation, int rgba[4], int spd) {
   debug.println("Speed: ", spd);
   debug.println("Duration: ", duration);
   debug.println("//// -------------------- ////");
-  
+
+  led.setCustomLighting(false);
 }
 
 /* -------------------------------------------------------------------------------------
@@ -376,4 +456,12 @@ boolean isI2CDeactivated() {
   return (value == 1);
 }
 
-
+boolean isValidNumber(String str){
+   for(byte i=0;i<str.length();i++)
+   {
+      if( ! isDigit(str.charAt(i)) ) {        
+        return false;
+      }
+   }
+   return true;
+} 

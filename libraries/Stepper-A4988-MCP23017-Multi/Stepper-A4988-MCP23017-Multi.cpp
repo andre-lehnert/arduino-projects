@@ -5,49 +5,113 @@
 
 A4988_MCP23017_Multi::A4988_MCP23017_Multi() {}
 
+A4988_MCP23017_Multi::A4988_MCP23017_Multi(unsigned int stepsPerRound, unsigned int stepDelay) {
+  _stepPin = -1;
+  _directionPin = -1;
+  _enablePin = -1;
+  _ms1Pin = -1;
+  _ms2Pin = -1;
+  _ms3Pin = -1;
+
+  _stepsPerRound = stepsPerRound;
+  _stepDelay = stepDelay;
+  _directionChangeDelay = 100; // ms
+
+}
+A4988_MCP23017_Multi::A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin) {
+  _stepPin = stepPin;
+  _directionPin = directionPin;
+  _enablePin = enablePin;
+  _ms1Pin = -1;
+  _ms2Pin = -1;
+  _ms3Pin = -1;
+
+  _stepsPerRound = 200;
+  _stepDelay = 500;
+  _directionChangeDelay = 100; // ms
+}
+A4988_MCP23017_Multi::A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin) {
+  _stepPin = stepPin;
+  _directionPin = directionPin;
+  _enablePin = enablePin;
+  _ms1Pin = ms1Pin;
+  _ms2Pin = ms2Pin;
+  _ms3Pin = ms3Pin;
+
+  _stepsPerRound = 200;
+  _stepDelay = 500;
+  _directionChangeDelay = 100; // ms
+}
+A4988_MCP23017_Multi::A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, unsigned int stepsPerRound, unsigned int stepDelay) {
+  _stepPin = stepPin;
+  _directionPin = directionPin;
+  _enablePin = enablePin;
+  _ms1Pin = -1;
+  _ms2Pin = -1;
+  _ms3Pin = -1;
+
+  _stepsPerRound = stepsPerRound;
+  _stepDelay = stepDelay;
+  _directionChangeDelay = 100; // ms
+}
+A4988_MCP23017_Multi::A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin, unsigned int stepsPerRound, unsigned int stepDelay) {
+  _stepPin = stepPin;
+  _directionPin = directionPin;
+  _enablePin = enablePin;
+  _ms1Pin = ms1Pin;
+  _ms2Pin = ms2Pin;
+  _ms3Pin = ms3Pin;
+
+  _stepsPerRound = stepsPerRound;
+  _stepDelay = stepDelay;
+  _directionChangeDelay = 100; // ms
+}
+
 /*
  * -----------------------------------------------------------------------------
  */
 
-void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t mcp)
+void A4988_MCP23017_Multi::begin(uint8_t mcp)
 {
- begin(stepPin, directionPin, enablePin, -1, -1, -1, 200, 500, mcp);
-}
-
-void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin,
-	unsigned int stepsPerRound, unsigned int stepDelay, uint8_t mcp)
-{
- begin(stepPin, directionPin, enablePin, -1, -1, -1, stepsPerRound, stepDelay, mcp);
-}
-
-void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin,
-	uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin, uint8_t mcp)
-{
- begin(stepPin, directionPin, enablePin, ms1Pin, ms2Pin, ms3Pin, 200, 500, mcp);
-}
-
-void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin,
- 	uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin,
- 	unsigned int stepsPerRound, unsigned int stepDelay, uint8_t mcp) {
-
-   _stepPin = stepPin;
-   _directionPin = directionPin;
-   _enablePin = enablePin;
-   _ms1Pin = ms1Pin;
-   _ms2Pin = ms2Pin;
-   _ms3Pin =ms3Pin;
-
-   _isUsingMCP = false;
    _mcp = mcp;
-   _stepsPerRound = stepsPerRound;
-   _stepDelay = stepDelay;
-   _directionChangeDelay = 100; // ms
+   _stepMcp = mcp;
+   _directionMcp = mcp;
+   _enableMcp = mcp;
+   _ms1Mcp = mcp;
+   _ms2Mcp = mcp;
+   _ms3Mcp = mcp;
 
-
-   Wire.begin();
+   _begin(_mcp);
    initPinModes();
+}
 
- }
+void A4988_MCP23017_Multi::begin(uint8_t stepMcp, uint8_t directionMcp, uint8_t enableMcp)
+{
+  _mcp = -1;
+  _stepMcp = stepMcp;
+  _directionMcp = directionMcp;
+  _enableMcp = enableMcp;
+  _ms1Mcp = -1;
+  _ms2Mcp = -1;
+  _ms3Mcp = -1;
+
+  _begin();
+  initPinModes();
+}
+
+void A4988_MCP23017_Multi::begin(uint8_t stepMcp, uint8_t directionMcp, uint8_t enableMcp, uint8_t ms1Mcp, uint8_t ms2Mcp, uint8_t ms3Mcp)
+{
+  _mcp = -1;
+  _stepMcp = stepMcp;
+  _directionMcp = directionMcp;
+  _enableMcp = enableMcp;
+  _ms1Mcp = ms1Mcp;
+  _ms2Mcp = ms2Mcp;
+  _ms3Mcp = ms3Mcp;
+
+  _begin();
+  initPinModes();
+}
 
  /*
   * MS PINs Methods
@@ -161,6 +225,7 @@ void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t 
  */
 
 
+
      // minihelper to keep Arduino backward compatibility
      static inline void _send(uint8_t x) {
      #if ARDUINO >= 100
@@ -195,35 +260,35 @@ void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t 
  /**
   * Sets the pin mode to either INPUT or OUTPUT
   */
-  void A4988_MCP23017_Multi::_pinMode(uint8_t pin, uint8_t pinMode) {
-  	_updateRegisterBit(pin, (pinMode==INPUT), IODIRA, IODIRB);
+  void A4988_MCP23017_Multi::_pinMode(uint8_t pin, uint8_t pinMode, uint8_t mcp) {
+  	_updateRegisterBit(pin, (pinMode==INPUT), IODIRA, IODIRB, mcp);
   }
   /**
    * Helper to update a single bit of an A/B register.
    * - Reads the current register value
    * - Writes the new register value
    */
-  void A4988_MCP23017_Multi::_updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAaddr, uint8_t portBaddr) {
+  void A4988_MCP23017_Multi::_updateRegisterBit(uint8_t pin, uint8_t pValue, uint8_t portAaddr, uint8_t portBaddr, uint8_t mcp) {
   	uint8_t regValue;
   	uint8_t regAddr= _regForPin(pin,portAaddr,portBaddr);
   	uint8_t bit= _bitForPin(pin);
-  	regValue = _readRegister(regAddr);
+  	regValue = _readRegister(regAddr, mcp);
 
   	// set the value for the particular bit
   	bitWrite(regValue,bit,pValue);
 
-  	_writeRegister(regAddr,regValue);
+  	_writeRegister(regAddr,regValue, mcp);
   }
 
   /**
    * Reads a given register
    */
-  uint8_t A4988_MCP23017_Multi::_readRegister(uint8_t addr){
+  uint8_t A4988_MCP23017_Multi::_readRegister(uint8_t addr, uint8_t mcp){
     // read the current GPINTEN
-    Wire.beginTransmission(ADDRESS | _mcp);
+    Wire.beginTransmission(ADDRESS | mcp);
     _send(addr);
     Wire.endTransmission();
-    Wire.requestFrom(ADDRESS | _mcp, 1);
+    Wire.requestFrom(ADDRESS | mcp, 1);
     return _receive();
   }
 
@@ -231,9 +296,9 @@ void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t 
   /**
    * Writes a given register
    */
-  void A4988_MCP23017_Multi::_writeRegister(uint8_t regAddr, uint8_t regValue){
+  void A4988_MCP23017_Multi::_writeRegister(uint8_t regAddr, uint8_t regValue, uint8_t mcp){
     // Write the register
-    Wire.beginTransmission(ADDRESS | _mcp);
+    Wire.beginTransmission(ADDRESS | mcp);
     _send(regAddr);
     _send(regValue);
     Wire.endTransmission();
@@ -241,7 +306,7 @@ void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t 
 
 
 
-    void A4988_MCP23017_Multi::_digitalWrite(uint8_t pin, uint8_t level) {
+    void A4988_MCP23017_Multi::_digitalWrite(uint8_t pin, uint8_t level, uint8_t mcp) {
     	uint8_t gpio;
     	uint8_t bit= _bitForPin(pin);
 
@@ -249,17 +314,45 @@ void A4988_MCP23017_Multi::begin(uint8_t stepPin, uint8_t directionPin, uint8_t 
 
     	// read the current GPIO output latches
     	uint8_t regAddr= _regForPin(pin, OLATA, OLATB);
-    	gpio = _readRegister(regAddr);
+    	gpio = _readRegister(regAddr, mcp);
 
     	// set the pin and direction
     	bitWrite(gpio, bit, level);
 
     	// write the new GPIO
     	regAddr= _regForPin(pin, GPIOA, GPIOB);
-    	_writeRegister(regAddr, gpio);
+    	_writeRegister(regAddr, gpio, mcp);
     }
 
+    /**
+     * Initializes the MCP23017 given its HW selected address, see datasheet for Address selection.
+     */
+    void A4988_MCP23017_Multi::_begin(uint8_t mcp) {
+     if (mcp > 7) {
+       mcp = 7;
+     }
 
+     Wire.begin();
+
+     // set defaults!
+     // all inputs on port A and B
+     _writeRegister(IODIRA,0xff, mcp);
+     _writeRegister(IODIRB,0xff, mcp);
+    }
+
+    void A4988_MCP23017_Multi::_begin() {
+
+     Wire.begin();
+
+     /*
+      * TODO
+      */
+
+     // set defaults!
+     // all inputs on port A and B
+     _writeRegister(IODIRA,0xff, mcp);
+     _writeRegister(IODIRB,0xff, mcp);
+    }
    /*
     * -----------------------------------------------------------------------------
     */

@@ -18,25 +18,49 @@ class A4988_MCP23017_Multi
 {
 	public:
 		A4988_MCP23017_Multi();
-		void begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t mcp);
-		void begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin,  unsigned int stepsPerRound, unsigned int stepDelay, uint8_t mcp);
-		void begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin, uint8_t mcp);
-		void begin(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin, unsigned int stepsPerRound, unsigned int stepDelay, uint8_t mcp);
+		A4988_MCP23017_Multi(unsigned int stepsPerRound, unsigned int stepDelay);
+		A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin);
+		A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin);
+		A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, unsigned int stepsPerRound, unsigned int stepDelay);
+		A4988_MCP23017_Multi(uint8_t stepPin, uint8_t directionPin, uint8_t enablePin, uint8_t ms1Pin, uint8_t ms2Pin, uint8_t ms3Pin, unsigned int stepsPerRound, unsigned int stepDelay);
+
+		// define MCP23017
+		void begin(uint8_t mcp);
+		void begin(uint8_t stepMcp, uint8_t directionMcp, uint8_t enableMcp);
+		void begin(uint8_t stepMcp, uint8_t directionMcp, uint8_t enableMcp, uint8_t ms1Mcp, uint8_t ms2Mcp, uint8_t ms3Mcp);
+
+//		void setStepMcp(uint8_t mcp);
+//		void setDirectionMcp(uint8_t mcp);
+//		void setEnableMcp(uint8_t mcp);
+//		void setMs1Mcp(uint8_t mcp);
+//		void setMs2Mcp(uint8_t mcp);
+//		void setMs3Mcp(uint8_t mcp);
+
+//		void setStepMcp(uint8_t stepPin, uint8_t mcp);
+//		void setDirectionMcp(uint8_t directionPin, uint8_t mcp);
+//		void setEnableMcp(uint8_t enablePin, uint8_t mcp);
+//		void setMs1Mcp(uint8_t ms1Pin, uint8_t mcp);
+//		void setMs2Mcp(uint8_t ms2Pin, uint8_t mcp);
+//		void setMs3Mcp(uint8_t ms3Pin, uint8_t mcp);
+
+		// with defined mcp
 		void setStepMode(unsigned int stepMode);
 		void doStep();
 		void enable();
 		void disable();
-		boolean isEnabled();
 		void up();
 		void clockWise();
 		void down();
 		void counterClockWise();
 		void changeDirection();
+
+		// general methods
+		boolean isEnabled();
 		void setStepsPerRound(double stepAngle);
 		void setStepDelay(unsigned int delayMicroSeconds);
 		void setRPM(unsigned int rpm);
 
-		 void test(uint8_t pin, uint8_t level);
+		void test(uint8_t pin, uint8_t level);
 
 	private:
 		unsigned int _stepsPerRound;
@@ -47,6 +71,12 @@ class A4988_MCP23017_Multi
 		uint8_t _ms2Pin;
 		uint8_t _ms3Pin;
 		uint8_t _mcp;
+		uint8_t _stepMcp;
+		uint8_t _directionMcp;
+		uint8_t _enableMcp;
+		uint8_t _ms1Mcp;
+		uint8_t _ms2Mcp;
+		uint8_t _ms3Mcp;
 		unsigned int _stepDelay;
 		unsigned int _initDelay;
 		unsigned int _minDelay;
@@ -67,8 +97,8 @@ class A4988_MCP23017_Multi
 		// Adafruit MCP23017 Library snippets
 		uint8_t _regForPin(uint8_t pin, uint8_t portAaddr, uint8_t portBaddr);
 		uint8_t _bitForPin(uint8_t pin);
-		//void _send(uint8_t x);
-		//uint8_t _receive();
+		void _begin();
+		void _begin(uint8_t addr);
 		void _pinMode(uint8_t pin, uint8_t pinMode);
 		void _digitalWrite(uint8_t pin, uint8_t level);
 	  uint8_t _readRegister(uint8_t addr);

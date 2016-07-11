@@ -137,56 +137,149 @@ void AlaLedLite::nextAnimation()
 
 bool AlaLedLite::runAnimation()
 {
-    // skip the refresh if not enough time has passed since last update
-	unsigned long cTime = millis();
-	if (cTime < lastRefreshTime + refreshMillis)
-		return false;
+	if ( ! _customLighting) {
 
-	// calculate real refresh rate
-	refreshRate = 1000/(cTime - lastRefreshTime);
+	    // skip the refresh if not enough time has passed since last update
+		unsigned long cTime = millis();
+		if (cTime < lastRefreshTime + refreshMillis)
+			return false;
 
-	lastRefreshTime = cTime;
+		// calculate real refresh rate
+		refreshRate = 1000/(cTime - lastRefreshTime);
+
+		lastRefreshTime = cTime;
 
 
-	if (animSeqLen != 0)
-    {
-		if(animSeq[currAnim].duration == 0)
-		{
-			setAnimation(animSeq[currAnim].animation, animSeq[currAnim].speed, animSeq[currAnim].palette);
-		}
-		else
-		{
-			long c = 0;
-			long t = cTime % animSeqDuration;
-			for(int i=0; i<animSeqLen; i++)
+		if (animSeqLen != 0)
+	    {
+			if(animSeq[currAnim].duration == 0)
 			{
-				if (t>=c && t<(c+animSeq[i].duration))
-				{
-					setAnimation(animSeq[i].animation, animSeq[i].speed, animSeq[i].palette);
-					break;
-				}
-				c = c + animSeq[i].duration;
+				setAnimation(animSeq[currAnim].animation, animSeq[currAnim].speed, animSeq[currAnim].palette);
 			}
-		}
-    }
+			else
+			{
+				long c = 0;
+				long t = cTime % animSeqDuration;
+				for(int i=0; i<animSeqLen; i++)
+				{
+					if (t>=c && t<(c+animSeq[i].duration))
+					{
+						setAnimation(animSeq[i].animation, animSeq[i].speed, animSeq[i].palette);
+						break;
+					}
+					c = c + animSeq[i].duration;
+				}
+			}
+	    }
 
-    if (animFunc != NULL)
-    {
-		(this->*animFunc)();
+	    if (animFunc != NULL)
+	    {
+			(this->*animFunc)();
 
-		// use an 8 bit shift to divide by 256
+			// use an 8 bit shift to divide by 256
 
-		if(driver==ALA_WS2812)
-		{
-			// this is not really so smart...
-			for(int i=0; i<numLeds; i++)
-				neopixels->setPixelColor(i, neopixels->Color((leds[i].r*maxOut.r)>>8, (leds[i].g*maxOut.g)>>8, (leds[i].b*maxOut.b)>>8));
+			if(driver==ALA_WS2812)
+			{
+				// this is not really so smart...
+				for(int i=0; i<numLeds; i++)
+					neopixels->setPixelColor(i, neopixels->Color((leds[i].r*maxOut.r)>>8, (leds[i].g*maxOut.g)>>8, (leds[i].b*maxOut.b)>>8));
 
-			neopixels->show();
+				neopixels->show();
+			}
 		}
 	}
 
 	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void AlaLedLite::setLED(String side, int led, int animation, AlaColor color) {
+
+	int s = getSideNumber(side);
+
+	int x= led-1;
+
+	switch (animation) {
+		case ALA_ON:
+			switch (s) {
+				case 0: leds[numLedsPerSide - (x+1)] = color; 				break;	// Side A
+				case 1: leds[numLedsPerSide + x] = color; 						break; 	// Side B
+				case 2: leds[3*numLedsPerSide - (x+1)] = color; 			break;	// Side C
+				case 3: leds[3*numLedsPerSide + x] = color; 					break; 	// Side D
+				default: break;
+			}
+			break;
+		case ALA_OFF:
+			switch (s) {
+				case 0: leds[numLedsPerSide - (x+1)] = 0x000000; 				break;	// Side A
+				case 1: leds[numLedsPerSide + x] = 0x000000; 						break; 	// Side B
+				case 2: leds[3*numLedsPerSide - (x+1)] = 0x000000; 			break;	// Side C
+				case 3: leds[3*numLedsPerSide + x] = 0x000000; 					break; 	// Side D
+				default: break;
+			}
+			break;
+		default: break;
+	}
+
+	run();
+}
+
+
+
+void AlaLedLite::setSide(String side, int animation, AlaColor color) {
+
+	int s = getSideNumber(side);
+
+	switch (animation) {
+		case ALA_ON:
+			for(int x=0; x < numLedsPerSide; x++) {
+				switch (s) {
+					case 0: leds[numLedsPerSide - (x+1)] = color; 				break;	// Side A
+					case 1: leds[numLedsPerSide + x] = color; 						break; 	// Side B
+					case 2: leds[3*numLedsPerSide - (x+1)] = color; 			break;	// Side C
+					case 3: leds[3*numLedsPerSide + x] = color; 					break; 	// Side D
+					default: break;
+				}
+			}
+		break;
+		case ALA_OFF:
+			for(int x=0; x < numLedsPerSide; x++) {
+				switch (s) {
+					case 0: leds[numLedsPerSide - (x+1)] = 0x000000; 				break;	// Side A
+					case 1: leds[numLedsPerSide + x] = 0x000000; 						break; 	// Side B
+					case 2: leds[3*numLedsPerSide - (x+1)] = 0x000000; 			break;	// Side C
+					case 3: leds[3*numLedsPerSide + x] = 0x000000; 					break; 	// Side D
+					default: break;
+				}
+			}
+			break;
+		default: break;
+	}
+
+
+	run();
+}
+
+
+void AlaLedLite::run() {
+	for(int i=0; i<numLeds; i++)
+		neopixels->setPixelColor(i, neopixels->Color((leds[i].r*maxOut.r)>>8, (leds[i].g*maxOut.g)>>8, (leds[i].b*maxOut.b)>>8));
+
+	neopixels->show();
+}
+
+int AlaLedLite::getSideNumber(String side) {
+
+	if (side == "a" || side == "A") {
+		return 0;
+	} else if (side == "b" || side == "B") {
+		return 1;
+	} else if (side == "c" || side == "C") {
+		return 2;
+	} else if (side == "d" || side == "D") {
+		return 3;
+	}
 }
 
 
@@ -379,4 +472,13 @@ void AlaLedLite::glow()
 			}
 		}
 	}
+}
+
+
+
+void AlaLedLite::setCustomLighting(bool customLighting) {
+	_customLighting = customLighting;
+}
+bool AlaLedLite::hasCustomLighting() {
+	return _customLighting;
 }

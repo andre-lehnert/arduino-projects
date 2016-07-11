@@ -44,8 +44,11 @@ public:
 	bool runAnimation();
 	void nextAnimation();
 
+	void setLED(String side, int led, int animation, AlaColor color);
+	void setSide(String side, int animation, AlaColor color);
 
-
+	void setCustomLighting(bool customLighting);
+	bool hasCustomLighting();
 private:
 
 	void setAnimationFunc(int animation);
@@ -63,6 +66,9 @@ private:
 
 
     void glow();
+
+		int getSideNumber(String side);
+		void run();
 
 	byte driver;    // type of led driver: ALA_PWM, ALA_TLC5940
 	byte *pins;     // pins where the leds are attached to
@@ -89,6 +95,7 @@ private:
 	float *pxPos;
 	float *pxSpeed;
 
+	boolean _customLighting;
 };
 
 
