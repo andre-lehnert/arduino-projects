@@ -69,7 +69,7 @@ Bar/ I2C Receiver
 ////////////////////////////////////////////////////////////////////////////////
 
 #define MASTER_ADDRESS  0x0f    // Raspberry Pi, Decimal: 15
-#define SLAVE_ADDRESS   0x13    // MotorController 0x10 + 1, Decimal: 17
+#define SLAVE_ADDRESS   0x25    // MotorController 0x10 + 1, Decimal: 17
 
 #define LED_PIN         8       // D8
 
